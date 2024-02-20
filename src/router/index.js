@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/admin/HomeView.vue'
 import UserListView from '../views/admin/UserListView.vue'
 import AddUserView from '../views/admin/AddUserView.vue'
+import EditUserView from '../views/admin/EditUserView.vue'
 import DataListView from '../views/admin/DataListView.vue'
 import AddDataView from '../views/admin/AddDataView.vue'
 import DivideDataView from '../views/admin/DivideDataView.vue'
@@ -19,7 +20,7 @@ import LoginPage from '../components/LoginPage.vue';
 
 const routes = [
   {
-    path: '/',
+    path: '/admin',
     name: 'home',
     component: HomeView,
     meta: {
@@ -35,16 +36,32 @@ const routes = [
     }
   },
   {
-    path: '/user-list',
+    path: '/admin/user-list',
     name: 'user-list',
     component: UserListView,
+    props: route => ({
+      page: parseInt(route.query.page) || 1, // Truyền tham số page từ URL vào props
+      keyword: route.query.keyword || '' // Truyền tham số keyword từ query string vào props, mặc định là null nếu không có keyword
+    }),
     meta: {
       layout: AdminLayout
     }
     
   },
   {
-    path: '/add-user',
+    path: '/admin/edit-user/:id',
+    name: 'edit-user',
+    component: EditUserView,
+    props: route => ({
+      id: parseInt(route.params.id) || null, // Truyền tham số page từ URL vào props
+    }),
+    meta: {
+      layout: AdminLayout
+    }
+    
+  },
+  {
+    path: '/admin/add-user',
     name: 'add-user',
     component: AddUserView,
     meta: {
@@ -52,7 +69,7 @@ const routes = [
     }
   },
   {
-    path: '/data-list',
+    path: '/admin/data-list',
     name: 'data-list',
     component: DataListView,
     meta: {
@@ -60,7 +77,7 @@ const routes = [
     }
   },
   {
-    path: '/add-data',
+    path: '/admin/add-data',
     name: 'add-data',
     component: AddDataView,
     meta: {
@@ -68,7 +85,7 @@ const routes = [
     }
   },
   {
-    path: '/divide-data',
+    path: '/admin/divide-data',
     name: 'divide-data',
     component: DivideDataView,
     meta: {
@@ -76,7 +93,7 @@ const routes = [
     }
   },
   {
-    path: '/assign-data',
+    path: '/admin/assign-data',
     name: 'assign-data',
     component: AssignDataView,
     meta: {
@@ -84,7 +101,7 @@ const routes = [
     }
   },
   {
-    path: '/login-time',
+    path: '/admin/login-time',
     name: 'login-time',
     component: LoginTimeView,
     meta: {
@@ -92,7 +109,7 @@ const routes = [
     }
   },
   {
-    path: '/change-log-list',
+    path: '/admin/change-log-list',
     name: 'change-log-list',
     component: ChangeLogListView,
     meta: {
@@ -100,7 +117,7 @@ const routes = [
     }
   },
   {
-    path: '/file-list',
+    path: '/admin/file-list',
     name: 'file-list',
     component: FileListView,
     meta: {

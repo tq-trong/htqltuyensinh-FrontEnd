@@ -1,7 +1,7 @@
 <template>
-  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+  <aside class="main-sidebar elevation-4 sidebar-light-warning">
     <!-- Brand Logo -->
-    <router-link to="/" class="brand-link">
+    <router-link to="/admin" class="brand-link">
       <img
         src="@/assets/logo.png"
         alt="AdminLTE Logo"
@@ -25,7 +25,7 @@
           />
         </div>
         <div class="info">
-          <a href="" class="d-block"></a>
+          <a href="" class="d-block">{{ upperCaseName }}</a>
         </div>
       </div>
       <!-- SidebarSearch Form -->
@@ -56,9 +56,9 @@
         >
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
-          <li class="nav-item">
+         <li class="nav-item" >
             <!-- menu-is-opening menu-open -->
-            <a href="#" class="nav-link">
+            <a href="#" class="nav-link" :class="{ active: menuOpened === 'user' }" @click="toggleMenu('user')">
               <i class="nav-icon fas fa-light fa-users"></i>
               <p>
                 Quản lý người dùng
@@ -67,14 +67,14 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <router-link to="/user-list" class="nav-link">
+                <router-link to="/admin/user-list" class="nav-link">
                   <!-- active -->
                   <i class="far fa-circle nav-icon"></i>
                   <p>Danh sách người dùng</p>
                 </router-link>
               </li>
               <li class="nav-item">
-                <router-link to="/add-user" class="nav-link">
+                <router-link to="/admin/add-user" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Thêm người dùng</p>
                 </router-link>
@@ -82,7 +82,7 @@
             </ul>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link">
+            <a href="#" class="nav-link" :class="{ active: menuOpened === 'data' }" @click="toggleMenu('data')">
               <i class="nav-icon fas fa-light fa-database"></i>
               <p>
                 Quản lý dữ liệu
@@ -91,25 +91,25 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <router-link to="/data-list" class="nav-link">
+                <router-link to="/admin/data-list" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Danh sách dữ liệu</p>
                 </router-link>
               </li>
               <li class="nav-item">
-                <router-link to="/add-data" class="nav-link">
+                <router-link to="/admin/add-data" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Thêm dữ liệu</p>
                 </router-link>
               </li>
               <li class="nav-item">
-                <router-link to="/divide-data" class="nav-link">
+                <router-link to="/admin/divide-data" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Phân đoạn dữ liệu</p>
                 </router-link>
               </li>
               <li class="nav-item">
-                <router-link to="/assign-data" class="nav-link">
+                <router-link to="/admin/assign-data" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Phân chia dữ liệu</p>
                 </router-link>
@@ -158,26 +158,26 @@
             </ul>
           </li>
           <li class="nav-item">
-            <router-link to="/login-time" class="nav-link">
+            <router-link to="/admin/login-time" class="nav-link">
               <i class="nav-icon fas fa-light fa-clock"></i>
               <p>Thời gian đăng nhập</p>
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/change-log-list" class="nav-link">
+            <router-link to="/admin/change-log-list" class="nav-link">
               <i class="nav-icon fas fa-edit"></i>
               <p>Xem nhật ký thay đổi</p>
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/file-list" class="nav-link">
+            <router-link to="/admin/file-list" class="nav-link">
               <i class="nav-icon fas fa-light fa-file"></i>
               <p>Xem danh sách hồ sơ</p>
             </router-link>
           </li>
           <div class="user-panel mt-3 pb-3 mb-3 d-flex"></div>
           <li class="nav-item">
-            <a href="" class="nav-link">
+            <a href="#" class="nav-link" @click="logout">
               <i class="nav-icon fas fa-light fa-arrow-left"></i>
               <p>Đăng xuất</p>
             </a>
@@ -189,3 +189,38 @@
     <!-- /.sidebar -->
   </aside>
 </template>
+
+<script>
+export default {
+  data() {
+    return {
+      userData: JSON.parse(localStorage.getItem("userData")) || {},
+      menuOpened: null,// Biến để theo dõi trạng thái mở/closed của menu
+    };
+  },
+  computed: {
+    // Tạo computed property để chuyển đổi userData.name thành chữ in hoa
+    upperCaseName() {
+      return this.userData.name ? this.userData.name.toUpperCase() : "";
+    },
+  },
+  methods: {
+    logout() {
+      // Xóa trạng thái đăng nhập khỏi localStorage khi đăng xuất
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("role");
+      localStorage.removeItem("userData");
+      this.isLoggedIn = false;
+      // Điều hướng người dùng đến trang đăng nhập sau khi đăng xuất
+      this.$router.push("/login");
+    },
+toggleMenu(menuType) {
+      if (this.menuOpened === menuType) {
+        this.menuOpened = null;
+      } else {
+        this.menuOpened = menuType;
+      }
+    }
+  },
+};
+</script>
