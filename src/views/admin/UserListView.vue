@@ -61,7 +61,7 @@
                             <th style="width: 10px">#</th>
                             <th style="width: 20px">Code</th>
                             <th>Họ và tên</th>
-                            <th>Vai trò</th>
+                            <th>Chức vụ</th>
                             <th>Ngày sinh</th>
                             <th>Giới tính</th>
                             <th>SĐT</th>

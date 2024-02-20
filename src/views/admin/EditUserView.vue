@@ -10,8 +10,12 @@
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <router-link to="/admin" class="breadcrumb-item">Trang chủ</router-link>
-              <router-link to="/admin/user-list" class="breadcrumb-item">Danh sách người dùng</router-link>
+              <router-link to="/admin" class="breadcrumb-item"
+                >Trang chủ</router-link
+              >
+              <router-link to="/admin/user-list" class="breadcrumb-item"
+                >Danh sách người dùng</router-link
+              >
               <li class="breadcrumb-item active">Thông tin cá nhân</li>
             </ol>
           </div>
@@ -46,10 +50,20 @@
 
                 <ul class="list-group list-group-unbordered mb-3">
                   <li class="list-group-item">
+                    <b>Chức vụ:</b>
+                    <a class="float-right">{{
+                      userData.role ? "Admin" : "Usermanger"
+                    }}</a>
+                  </li>
+                  <li class="list-group-item">
                     <b>Giới tính:</b>
                     <a class="float-right">{{
                       userData.gender ? "Nam" : "Nữ"
                     }}</a>
+                  </li>
+                  <li class="list-group-item">
+                    <b>Ngày sinh:</b>
+                    <a class="float-right">{{ formattedDate }}</a>
                   </li>
                   <li class="list-group-item">
                     <b>SĐT:</b>
@@ -111,7 +125,10 @@
                   <!-- /.tab-pane -->
                   <div class="tab-pane" id="detail">
                     <!-- form start -->
-                    <form class="form-horizontal" method="POST">
+                    <form
+                      class="form-horizontal"
+                      @submit.prevent="handleSubmit"
+                    >
                       <div class="form-group row">
                         <label for="inputName" class="col-sm-2 col-form-label"
                           >Họ và tên:</label
@@ -121,8 +138,7 @@
                             type="text"
                             class="form-control"
                             id="inputName"
-                            v-model="userData.name"
-                            name="name"
+                            v-model="formData.name"
                             required
                           />
                         </div>
@@ -140,8 +156,8 @@
                                 id="customRadio1"
                                 name="gender"
                                 :value="true"
-                                :checked="userData.gender === true"
-                                @change="userData.gender = true"
+                                :checked="formData.gender === true"
+                                @change="formData.gender = true"
                               />
                               <label
                                 for="customRadio1"
@@ -160,8 +176,8 @@
                                 id="customRadio2"
                                 name="gender"
                                 :value="false"
-                                :checked="userData.gender === false"
-                                @change="userData.gender = false"
+                                :checked="formData.gender === false"
+                                @change="formData.gender = false"
                               />
                               <label
                                 for="customRadio2"
@@ -181,7 +197,7 @@
                             type="text"
                             class="form-control"
                             id="inputName2"
-                            v-model="userData.phone"
+                            v-model="formData.phone"
                           />
                         </div>
                       </div>
@@ -194,7 +210,7 @@
                             type="email"
                             class="form-control"
                             id="inputEmail"
-                            v-model="userData.email"
+                            v-model="formData.email"
                             name="email"
                             required
                           />
@@ -212,7 +228,7 @@
                             id="inputExperience"
                             name="diachi"
                             required
-                            v-model="userData.address"
+                            v-model="formData.address"
                           ></textarea>
                         </div>
                       </div>
@@ -309,17 +325,66 @@
 
 <script>
 import axios from "axios";
+import MethodComponent from "@/components/methods/MethodComponent.vue";
+import Swal from "sweetalert2";
 
 export default {
+  computed: {
+    formattedDate() {
+      // Sử dụng phương thức formatBirthday từ file DateUtils.vue
+      return MethodComponent.methods.formatBirthday(this.userData.birthday);
+    },
+    // succecss() {
+    //   return MethodComponent.methods.showToastSuccess("Cập nhật thành công !!!");
+    // },
+    // error() {
+    //   return MethodComponent.methods.showToastSuccess("Cập nhật thất bại !!!");
+    // }
+  },
   data() {
     return {
       idUser: null,
-      userData: [], // Khởi tạo biến để lưu dữ liệu trả về từ API
+      userData: {
+        // dùng để show
+        code: "",
+        name: "",
+        birthday: "",
+        username: "",
+        password: "",
+        gender: true,
+        phone: "",
+        email: "",
+        address: "",
+        role: true,
+        status: true,
+      },
+      formData: {
+        // Dùng để chỉnh sửa thông tin cá nhân
+        code: "",
+        name: "",
+        birthday: "",
+        username: "",
+        password: "",
+        gender: true,
+        phone: "",
+        email: "",
+        address: "",
+        role: true,
+        status: true,
+      },
+      Toast: null,
     };
   },
   mounted() {
     this.idUser = this.$route.params.id ? this.$route.params.id : null;
     this.fetchUserData();
+
+    this.Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000
+    });
   },
   methods: {
     fetchUserData() {
@@ -332,11 +397,44 @@ export default {
         .get(`http://localhost:8083/api/admins/${this.idUser}`)
         .then((response) => {
           this.userData = response.data.admin; // Lưu dữ liệu trả về vào biến userData
+          this.formData = { ...response.data.admin };
           console.log(this.idUser);
         })
         .catch((error) => {
           console.error("Error fetching user data:", error);
         });
+    },
+    async handleSubmit() {
+      try {
+        const response = await axios.put(
+          `http://localhost:8083/api/admins/${this.idUser}`,
+          {
+            code: this.formData.code,
+            name: this.formData.name,
+            birthday: this.formData.birthday,
+            username: this.formData.username,
+            password: this.formData.password,
+            gender: this.formData.gender,
+            phone: this.formData.phone,
+            email: this.formData.email,
+            address: this.formData.address,
+            role: this.formData.role,
+            status: this.formData.status,
+          }
+        );
+        console.log(response.data); // Log response from the server
+        this.showLoginError();
+        this.userData = { ...this.formData };
+      } catch (error) {
+        console.log("Error:", error);
+        
+      }
+    },
+    showLoginError() {
+      this.Toast.fire({
+        icon: "success",
+        title: "Cập nhật thành công !",
+      });
     },
   },
 };
