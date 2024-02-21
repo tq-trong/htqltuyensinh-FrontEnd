@@ -74,7 +74,7 @@
 
 <script>
 import axios from "axios";
-import Swal from "sweetalert2";
+import MethodComponent from "@/components/methods/MethodComponent.vue";
 
 export default {
   data() {
@@ -82,17 +82,12 @@ export default {
       username: "",
       password: "",
       isLoggedIn: false,
-      Toast: null,
     };
   },
-  mounted() {
-    // Khởi tạo Toast khi component được mounted
-    this.Toast = Swal.mixin({
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 3000
-    });
+  computed: {
+    getSwalMixin() {
+      return MethodComponent.methods.swalMixin();
+    },
   },
   methods: {
     login() {
@@ -123,18 +118,15 @@ export default {
             this.$router.push("/usermanager");
           } else {
             // Không có vai trò nào phù hợp
-            this.showLoginError();
+           this.toastAlert("error", "Lỗi");
           }
         })
         .catch(() => {
-          this.showLoginError();
+          this.toastAlert("error", "Sai tên đăng nhập hoặc mật khẩu !!!");
         });
     },
-    showLoginError() {
-      this.Toast.fire({
-        icon: "error",
-        title: "Sai tên đăng nhập hoặc mật khẩu !",
-      });
+    toastAlert(icon, title) {
+      MethodComponent.methods.showToastAlert(this.getSwalMixin, icon, title);
     },
   },
 };

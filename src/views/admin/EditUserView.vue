@@ -125,10 +125,7 @@
                   <!-- /.tab-pane -->
                   <div class="tab-pane" id="detail">
                     <!-- form start -->
-                    <form
-                      class="form-horizontal"
-                      @submit.prevent="handleSubmit"
-                    >
+                    <form class="form-horizontal" @submit.prevent="changeInfor">
                       <div class="form-group row">
                         <label for="inputName" class="col-sm-2 col-form-label"
                           >Họ và tên:</label
@@ -185,6 +182,28 @@
                                 >Nữ</label
                               >
                             </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label class="col-sm-2 col-form-label"
+                          >Ngày sinh:</label
+                        >
+                        <div class="col-sm-10">
+                          <div class="input-group">
+                            <div class="input-group-prepend">
+                              <span class="input-group-text"
+                                ><i class="far fa-calendar-alt"></i
+                              ></span>
+                            </div>
+                            <input
+                              ref="dateInput"
+                              type="text"
+                              class="form-control"
+                              data-inputmask-alias="datetime"
+                              data-inputmask-inputformat="dd/mm/yyyy"
+                              data-mask
+                            />
                           </div>
                         </div>
                       </div>
@@ -248,18 +267,19 @@
                   <!-- /.tab-pane -->
 
                   <div class="tab-pane" id="changePass">
-                    <form class="form-horizontal" id="doiMK" method="POST">
-                      <div class="form-group row">
+                    <form class="form-horizontal" @submit.prevent="changePass">
+                      <div
+                        class="form-group row"
+                        v-if="roleUserLoggedIn === 'USERMANAGER'"
+                      >
                         <label for="inputName" class="col-sm-3 col-form-label"
                           >Mật khẩu hiện tại:</label
                         >
                         <div class="col-sm-9">
                           <input
                             type="password"
-                            name="passwordCurrent"
                             class="form-control"
-                            id="inputName"
-                            required
+                            v-model="currentPassword"
                           />
                         </div>
                       </div>
@@ -270,9 +290,8 @@
                         <div class="col-sm-9">
                           <input
                             type="password"
-                            name="passwordNew"
                             class="form-control"
-                            id="passwordNew"
+                            v-model="newPassword"
                             required
                           />
                         </div>
@@ -284,9 +303,8 @@
                         <div class="col-sm-9">
                           <input
                             type="password"
-                            name="passwordConfirm"
                             class="form-control"
-                            id="passwordConfirm"
+                            v-model="confirmPassword"
                             required
                           />
                         </div>
@@ -326,7 +344,7 @@
 <script>
 import axios from "axios";
 import MethodComponent from "@/components/methods/MethodComponent.vue";
-import Swal from "sweetalert2";
+import $ from "jquery"; // Import jQuery
 
 export default {
   computed: {
@@ -334,15 +352,13 @@ export default {
       // Sử dụng phương thức formatBirthday từ file DateUtils.vue
       return MethodComponent.methods.formatBirthday(this.userData.birthday);
     },
-    // succecss() {
-    //   return MethodComponent.methods.showToastSuccess("Cập nhật thành công !!!");
-    // },
-    // error() {
-    //   return MethodComponent.methods.showToastSuccess("Cập nhật thất bại !!!");
-    // }
+    getSwalMixin() {
+      return MethodComponent.methods.swalMixin();
+    },
   },
   data() {
     return {
+      roleUserLoggedIn: localStorage.getItem("role"),
       idUser: null,
       userData: {
         // dùng để show
@@ -373,17 +389,17 @@ export default {
         status: true,
       },
       Toast: null,
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     };
   },
   mounted() {
     this.idUser = this.$route.params.id ? this.$route.params.id : null;
     this.fetchUserData();
 
-    this.Toast = Swal.mixin({
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 3000
+    $(this.$refs.dateInput).inputmask("dd/mm/yyyy", {
+      placeholder: "dd/mm/yyyy",
     });
   },
   methods: {
@@ -404,7 +420,7 @@ export default {
           console.error("Error fetching user data:", error);
         });
     },
-    async handleSubmit() {
+    async changeInfor() {
       try {
         const response = await axios.put(
           `http://localhost:8083/api/admins/${this.idUser}`,
@@ -423,18 +439,71 @@ export default {
           }
         );
         console.log(response.data); // Log response from the server
-        this.showLoginError();
+        this.toastAlert("success", "Cập nhật thành công !!!");
         this.userData = { ...this.formData };
       } catch (error) {
-        console.log("Error:", error);
-        
+        this.toastAlert("error", "Cập nhật không thành công !!!");
       }
     },
-    showLoginError() {
-      this.Toast.fire({
-        icon: "success",
-        title: "Cập nhật thành công !",
+    async checkPass() {
+      try {
+        const response = await axios.post(
+          `http://localhost:8083/api/admins/checkPass/${this.idUser}`,
+          { password: this.currentPassword }
+        );
+        return response.data;
+      } catch (error) {
+        console.error(error);
+        return false;
+      }
+    },
+    async changePass() {
+      if (this.roleUserLoggedIn === "ADMIN") {
+        if (this.newPassword === this.confirmPassword) {
+          try {
+            await this.updatePassword();
+            this.toastAlert("success", "Đổi mật khẩu thành công !!!");
+          } catch (error) {
+            this.toastAlert("error", "Lỗi !!!");
+          }
+        } else {
+          this.toastAlert("error", "Xác nhận mật khẩu không khớp !!!");
+        }
+      } else {
+        const isPasswordCorrect = await this.checkPass();
+        if (isPasswordCorrect) {
+          if (this.newPassword === this.confirmPassword) {
+            try {
+              await this.updatePassword();
+              this.toastAlert("success", "Đổi mật khẩu thành công !!!");
+            } catch (error) {
+              this.toastAlert("error", "Lỗi !!!");
+            }
+          } else {
+            this.toastAlert("error", "Xác nhận mật khẩu không khớp !!!");
+          }
+        } else {
+          this.toastAlert("error", "Mật khẩu hiện tại không chính xác !!!");
+        }
+      }
+    },
+    updatePassword() {
+      return axios.put(`http://localhost:8083/api/admins/${this.idUser}`, {
+        code: this.userData.code,
+        name: this.userData.name,
+        birthday: this.userData.birthday,
+        username: this.userData.username,
+        password: this.newPassword,
+        gender: this.userData.gender,
+        phone: this.userData.phone,
+        email: this.userData.email,
+        address: this.userData.address,
+        role: this.userData.role,
+        status: this.userData.status,
       });
+    },
+    toastAlert(icon, title) {
+      MethodComponent.methods.showToastAlert(this.getSwalMixin, icon, title);
     },
   },
 };

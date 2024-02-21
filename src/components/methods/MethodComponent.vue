@@ -1,17 +1,7 @@
 <script>
-//import Swal from "sweetalert2";
+import Swal from "sweetalert2";
 
 export default {
-//   data() {
-//     return {
-//       Toast: Swal.mixin({
-//         toast: true,
-//         position: "top-end",
-//         showConfirmButton: false,
-//         timer: 3000,
-//       })
-//     };
-//   },
   methods: {
     formatBirthday(dateString) {
       if (!dateString) return "";
@@ -23,20 +13,21 @@ export default {
         month < 10 ? "0" + month : month
       }-${year}`;
     },
-    // showToastError(title) {
-    //   this.Toast.fire({
-    //     icon: "error",
-    //     title: title,
-    //   });
-      
-    // },
-    // showToastSuccess(title) {
-    //   this.Toast.fire({
-    //     icon: "success",
-    //     title: title,
-    //   });
-    //   console.log(this.toast);
-    // },
+    swalMixin() {
+      return Swal.mixin({
+        //toast: true,
+        //position: "mid",
+        //showConfirmButton: true,
+        showCancelButton: true,
+        //timer: 3000,
+      });
+    },
+    showToastAlert(swal, icon, title) {
+      return swal.fire({
+        icon: icon,
+        title: title,
+      });
+    },
   },
 };
 </script>
