@@ -63,7 +63,7 @@
                   </li>
                   <li class="list-group-item">
                     <b>Ngày sinh:</b>
-                    <a class="float-right">{{ formattedDate }}</a>
+                    <a class="float-right">{{ formattedDate(userData.birthday) }}</a>
                   </li>
                   <li class="list-group-item">
                     <b>SĐT:</b>
@@ -77,13 +77,7 @@
                     <b>Email:</b>
                     <a class="float-right">{{ userData.email }}</a>
                   </li>
-                  <li class="list-group-item">
-                    <b>Tên đăng nhập:</b>
-                    <a class="float-right">{{ userData.username }}</a>
-                  </li>
-                  <li class="list-group-item">
-                    <b>Mật khẩu:</b> <a class="float-right">●●●●●●●●●●</a>
-                  </li>
+
                 </ul>
               </div>
               <!-- /.card-body -->
@@ -202,7 +196,9 @@
                               class="form-control"
                               data-inputmask-alias="datetime"
                               data-inputmask-inputformat="dd/mm/yyyy"
+                              :value="formattedDate(formData.birthday)"
                               data-mask
+                              @input="event => birthdayText = event.target.value"
                             />
                           </div>
                         </div>
@@ -348,16 +344,13 @@ import $ from "jquery"; // Import jQuery
 
 export default {
   computed: {
-    formattedDate() {
-      // Sử dụng phương thức formatBirthday từ file DateUtils.vue
-      return MethodComponent.methods.formatBirthday(this.userData.birthday);
-    },
     getSwalMixin() {
       return MethodComponent.methods.swalMixin();
     },
   },
   data() {
     return {
+      birthdayText: '01/01/1000',
       roleUserLoggedIn: localStorage.getItem("role"),
       idUser: null,
       userData: {
@@ -399,7 +392,7 @@ export default {
     this.fetchUserData();
 
     $(this.$refs.dateInput).inputmask("dd/mm/yyyy", {
-      placeholder: "dd/mm/yyyy",
+      placeholder: this.formattedDate(this.formData.birthday),
     });
   },
   methods: {
@@ -445,6 +438,7 @@ export default {
         this.toastAlert("error", "Cập nhật không thành công !!!");
       }
     },
+
     async checkPass() {
       try {
         const response = await axios.post(
@@ -457,6 +451,7 @@ export default {
         return false;
       }
     },
+
     async changePass() {
       if (this.roleUserLoggedIn === "ADMIN") {
         if (this.newPassword === this.confirmPassword) {
@@ -487,6 +482,7 @@ export default {
         }
       }
     },
+
     updatePassword() {
       return axios.put(`http://localhost:8083/api/admins/${this.idUser}`, {
         code: this.userData.code,
@@ -502,8 +498,14 @@ export default {
         status: this.userData.status,
       });
     },
+    
     toastAlert(icon, title) {
       MethodComponent.methods.showToastAlert(this.getSwalMixin, icon, title);
+      console.log(this.birthdayText);
+    },
+
+    formattedDate(birthday) {
+      return MethodComponent.methods.formatBirthday(birthday);
     },
   },
 };

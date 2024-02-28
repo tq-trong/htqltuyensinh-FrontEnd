@@ -85,7 +85,7 @@
                                 {{ admin.role ? "admin" : "usermanager" }}
                               </span>
                             </td>
-                            <td>{{ formatBirthday(admin.birthday) }}</td>
+                            <td>{{ formattedDate(admin.birthday) }}</td>
                             <td>{{ admin.gender ? "Nam" : "Nữ" }}</td>
                             <td>{{ admin.phone }}</td>
                             <td>{{ admin.email }}</td>
@@ -126,7 +126,7 @@
                     <router-link
                       :to="{
                         name: 'user-list',
-                        query: { page: 1, keyword: searchKeyword },
+                        query: { page: currentPage < 1 ? currentPage - 1 : 1, keyword: searchKeyword },
                       }"
                       class="page-link"
                       :class="{ active: currentPage === 1 }"
@@ -152,7 +152,7 @@
                     <router-link
                       :to="{
                         name: 'user-list',
-                        query: { page: totalPages, keyword: searchKeyword },
+                        query: { page: currentPage < totalPages ? currentPage + 1 : totalPages, keyword: searchKeyword },
                       }"
                       class="page-link"
                       :class="{ active: currentPage === totalPages }"
@@ -170,81 +170,36 @@
 </template>
 
 <script>
-import axios from "axios";
-
+import MethodComponent from "@/components/methods/MethodComponent.vue";
+const API_NAME = "admins";
 export default {
   data() {
     return {
       admins: [],
       totalPages: 0,
       currentPage: 1,
-      showEllipsisAfter: false, // Di chuyển showEllipsisAfter vào data để tránh lỗi side effect
       searchKeyword: "",
     };
   },
   computed: {
-    formatBirthday() {
-      return function (dateString) {
-        if (!dateString) return "";
-        const date = new Date(dateString);
-        const day = date.getDate();
-        const month = date.getMonth() + 1;
-        const year = date.getFullYear();
-        return `${day < 10 ? "0" + day : day}-${
-          month < 10 ? "0" + month : month
-        }-${year}`;
-      };
-    },
     displayedPages() {
-      const maxDisplayedPages = 5;
-      const middlePage = Math.ceil(maxDisplayedPages / 2);
-      let startPage = this.currentPage - middlePage + 1;
-      if (startPage < 1) {
-        startPage = 1;
-      }
-      let endPage = startPage + maxDisplayedPages - 1;
-      if (endPage > this.totalPages) {
-        endPage = this.totalPages;
-        startPage = Math.max(1, endPage - maxDisplayedPages + 1);
-      }
-      return Array.from(
-        { length: endPage - startPage + 1 },
-        (_, i) => startPage + i
-      );
+      return MethodComponent.methods.calculateDisplayedPages(this.currentPage, this.totalPages);
     },
   },
   methods: {
     fetchAdmins(page) {
-      let url = `http://localhost:8083/api/admins?page=${page}`;
-      // Kiểm tra xem có từ khóa tìm kiếm không
-      if (this.searchKeyword) {
-        url += `&keyword=${encodeURIComponent(this.searchKeyword)}`;
-      }
-      axios
-        .get(url)
-        .then((response) => {
+      MethodComponent.methods.fetchData(page, this.searchKeyword, API_NAME)
+        .then(response => {
           this.admins = response.data.listResult;
           this.totalPages = response.data.totalPage;
           this.currentPage = response.data.page;
-
-          // Tính toán showEllipsisAfter sau khi nhận dữ liệu từ API
-          const maxDisplayedPages = 5;
-          const middlePage = Math.ceil(maxDisplayedPages / 2);
-          let startPage = this.currentPage - middlePage + 1;
-          if (startPage < 1) {
-            startPage = 1;
-          }
-          let endPage = startPage + maxDisplayedPages - 1;
-          if (endPage > this.totalPages) {
-            endPage = this.totalPages;
-            startPage = Math.max(1, endPage - maxDisplayedPages + 1);
-          }
-          this.showEllipsisAfter = endPage < this.totalPages;
-          console.log(response.data.page);
         })
-        .catch((error) => {
+        .catch(error => {
           console.error("Error fetching admins:", error);
         });
+    },
+    formattedDate(birthday) {
+      return MethodComponent.methods.formatBirthday(birthday);
     },
   },
   mounted() {

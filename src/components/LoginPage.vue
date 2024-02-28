@@ -73,61 +73,63 @@
 </template>
 
 <script>
+import { ref } from "vue";
 import axios from "axios";
+import { useRouter } from "vue-router";
 import MethodComponent from "@/components/methods/MethodComponent.vue";
 
 export default {
-  data() {
-    return {
-      username: "",
-      password: "",
-      isLoggedIn: false,
-    };
-  },
-  computed: {
-    getSwalMixin() {
-      return MethodComponent.methods.swalMixin();
-    },
-  },
-  methods: {
-    login() {
+  setup() {
+    const username = ref("");
+    const password = ref("");
+    const isLoggedIn = ref(false);
+
+    const swalMixin = MethodComponent.methods.swalMixin();
+    const router = useRouter();
+
+    const login = () => {
       axios
         .post("http://localhost:8083/login", {
-          username: this.username,
-          password: this.password,
+          username: username.value,
+          password: password.value,
         })
         .then((response) => {
           const userData = response.data;
-          // Lưu toàn bộ thông tin người dùng vào localStorage
           localStorage.setItem("userData", JSON.stringify(userData));
 
           const authorities = response.data.authorities.map(
             (auth) => auth.authority
           );
           if (authorities.includes("ADMIN")) {
-            // Đăng nhập thành công với vai trò ADMIN
             localStorage.setItem("isLoggedIn", true);
             localStorage.setItem("role", "ADMIN");
-            this.isLoggedIn = true;
-            this.$router.push("/admin");
+            isLoggedIn.value = true;
+            router.push("/admin"); // Điều hướng đến trang admin
           } else if (authorities.includes("USERMANAGER")) {
-            // Đăng nhập thành công với vai trò USERMANAGER
             localStorage.setItem("isLoggedIn", true);
             localStorage.setItem("role", "USERMANAGER");
-            this.isLoggedIn = true;
-            this.$router.push("/usermanager");
+            isLoggedIn.value = true;
+            router.push("/usermanager"); // Điều hướng đến trang usermanager
           } else {
-            // Không có vai trò nào phù hợp
-           this.toastAlert("error", "Lỗi");
+            toastAlert("error", "Lỗi");
           }
         })
         .catch(() => {
-          this.toastAlert("error", "Sai tên đăng nhập hoặc mật khẩu !!!");
+          toastAlert("error", "Sai tên đăng nhập hoặc mật khẩu !!!");
         });
-    },
-    toastAlert(icon, title) {
-      MethodComponent.methods.showToastAlert(this.getSwalMixin, icon, title);
-    },
+    };
+
+    const toastAlert = (icon, title) => {
+      MethodComponent.methods.showToastAlert(swalMixin, icon, title);
+    };
+
+    return {
+      username,
+      password,
+      isLoggedIn,
+      login,
+      toastAlert,
+    };
   },
 };
 </script>
