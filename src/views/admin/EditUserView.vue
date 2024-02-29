@@ -429,9 +429,7 @@ export default {
             status: this.formData.status,
           }
         );
-        //console.log(response.data); // Log response from the server
         this.toastAlert("success", "Cập nhật thành công !!!");
-        //console.log(this.formData.birthday);
         this.fetchUserData();
         console.log(this.formData.birthday);
       } catch (error) {
