@@ -84,7 +84,7 @@ export default {
     const password = ref("");
     const isLoggedIn = ref(false);
 
-    const swalMixin = MethodComponent.methods.swalMixin();
+    const swalTopRight= MethodComponent.methods.swalTopRight();
     const router = useRouter();
 
     const login = () => {
@@ -120,7 +120,7 @@ export default {
     };
 
     const toastAlert = (icon, title) => {
-      MethodComponent.methods.showToastAlert(swalMixin, icon, title);
+      MethodComponent.methods.showToastAlert(swalTopRight, icon, title);
     };
 
     return {

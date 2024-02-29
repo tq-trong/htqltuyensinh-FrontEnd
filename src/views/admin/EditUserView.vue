@@ -63,7 +63,9 @@
                   </li>
                   <li class="list-group-item">
                     <b>Ngày sinh:</b>
-                    <a class="float-right">{{ formattedDate(userData.birthday) }}</a>
+                    <a class="float-right">{{
+                      formattedDateVN(userData.birthday)
+                    }}</a>
                   </li>
                   <li class="list-group-item">
                     <b>SĐT:</b>
@@ -77,7 +79,6 @@
                     <b>Email:</b>
                     <a class="float-right">{{ userData.email }}</a>
                   </li>
-
                 </ul>
               </div>
               <!-- /.card-body -->
@@ -191,14 +192,12 @@
                               ></span>
                             </div>
                             <input
-                              ref="dateInput"
+                              ref = "dateInput"
                               type="text"
                               class="form-control"
                               data-inputmask-alias="datetime"
-                              data-inputmask-inputformat="dd/mm/yyyy"
-                              :value="formattedDate(formData.birthday)"
-                              data-mask
-                              @input="event => birthdayText = event.target.value"
+                              data-inputmask-inputformat="dd-mm-yyyy"
+                              v-model="formData.birthday"
                             />
                           </div>
                         </div>
@@ -344,13 +343,12 @@ import $ from "jquery"; // Import jQuery
 
 export default {
   computed: {
-    getSwalMixin() {
-      return MethodComponent.methods.swalMixin();
+    getSwalTopRight() {
+      return MethodComponent.methods.swalTopRight();
     },
   },
   data() {
     return {
-      birthdayText: '01/01/1000',
       roleUserLoggedIn: localStorage.getItem("role"),
       idUser: null,
       userData: {
@@ -391,8 +389,8 @@ export default {
     this.idUser = this.$route.params.id ? this.$route.params.id : null;
     this.fetchUserData();
 
-    $(this.$refs.dateInput).inputmask("dd/mm/yyyy", {
-      placeholder: this.formattedDate(this.formData.birthday),
+    $(this.$refs.dateInput).inputmask("dd-mm-yyyy", {
+      placeholder: this.formData.birthday,
     });
   },
   methods: {
@@ -407,7 +405,7 @@ export default {
         .then((response) => {
           this.userData = response.data.admin; // Lưu dữ liệu trả về vào biến userData
           this.formData = { ...response.data.admin };
-          console.log(this.idUser);
+          this.formData.birthday = this.formattedDateVN(this.formData.birthday);
         })
         .catch((error) => {
           console.error("Error fetching user data:", error);
@@ -415,12 +413,12 @@ export default {
     },
     async changeInfor() {
       try {
-        const response = await axios.put(
+        await axios.put(
           `http://localhost:8083/api/admins/${this.idUser}`,
           {
             code: this.formData.code,
             name: this.formData.name,
-            birthday: this.formData.birthday,
+            birthday: this.formattedDateEN(this.formData.birthday),
             username: this.formData.username,
             password: this.formData.password,
             gender: this.formData.gender,
@@ -431,10 +429,14 @@ export default {
             status: this.formData.status,
           }
         );
-        console.log(response.data); // Log response from the server
+        //console.log(response.data); // Log response from the server
         this.toastAlert("success", "Cập nhật thành công !!!");
-        this.userData = { ...this.formData };
+        //console.log(this.formData.birthday);
+        this.fetchUserData();
+        console.log(this.formData.birthday);
       } catch (error) {
+        console.log(this.formattedDateEN(this.formData.birthday));
+        console.log(error);
         this.toastAlert("error", "Cập nhật không thành công !!!");
       }
     },
@@ -498,14 +500,16 @@ export default {
         status: this.userData.status,
       });
     },
-    
+
     toastAlert(icon, title) {
-      MethodComponent.methods.showToastAlert(this.getSwalMixin, icon, title);
-      console.log(this.birthdayText);
+      MethodComponent.methods.showToastAlert(this.getSwalTopRight, icon, title);
     },
 
-    formattedDate(birthday) {
-      return MethodComponent.methods.formatBirthday(birthday);
+    formattedDateVN(birthday) {
+      return MethodComponent.methods.formatBirthday_VN(birthday);
+    },
+    formattedDateEN(birthday) {
+      return MethodComponent.methods.formatBirthday_EN(birthday);
     },
   },
 };
