@@ -14,6 +14,11 @@ export default {
       }
       return axios.get(url);
     },
+    fetchProvinces() {
+      // Hàm lấy dữ liệu tỉnh về
+      let url = `https://vapi.vnappmob.com/api/province`;
+      return axios.get(url);
+    },
     formatBirthday_VN(dateString) {
       // Hàm định dạng ngày sinh
       if (!dateString) return "";
@@ -22,6 +27,20 @@ export default {
       const month = date.getMonth() + 1;
       const year = date.getFullYear();
       return `${day < 10 ? "0" + day : day}-${
+        month < 10 ? "0" + month : month
+      }-${year}`;
+    },
+    formatDateTime(dateString) {
+      // Hàm định dạng ngày sinh
+      if (!dateString) return "";
+      const dateTime = new Date(dateString);
+      const day = dateTime.getDate();
+      const month = dateTime.getMonth() + 1;
+      const year = dateTime.getFullYear();
+      const hours = dateTime.getHours();
+      const minutes = dateTime.getMinutes();
+      const seconds = dateTime.getSeconds();
+      return `${hours < 10 ? "0" + hours : hours}:${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds} ${day < 10 ? "0" + day : day}-${
         month < 10 ? "0" + month : month
       }-${year}`;
     },

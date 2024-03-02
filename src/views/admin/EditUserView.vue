@@ -109,12 +109,47 @@
                     >
                   </li>
                 </ul>
+                
               </div>
               <!-- /.card-header -->
+              
               <div class="card-body">
                 <div class="tab-content">
                   <div class="active tab-pane" id="activity">
-                    <div class="card-body"></div>
+                    <div class="card-body">
+                      <!-- /.col -->
+                      <div class="col-md-12">
+                        <div class="card">
+                          <!-- /.card-header -->
+                          <div class="card-body p-0">
+                            <table class="table table-striped">
+                              <thead>
+                                <tr>
+                                  <th style="width: 10px">#</th>
+                                  <th>Thời gian</th>
+                                  <th>Chi tiết</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr
+                                  v-for="(changeLog, index) in changeLogs"
+                                  :key="changeLog.id"
+                                >
+                                  <td>{{ index + 1 }}</td>
+                                  <td>
+                                    {{ formattedDateLog(changeLog.time) }}
+                                  </td>
+                                  <td>{{ changeLog.description }}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                          <!-- /.card-body -->
+                        </div>
+                        <!-- /.card -->
+                      </div>
+                      <!-- /.col -->
+                    </div>
                     <!-- /.card-body -->
                   </div>
                   <!-- /.tab-pane -->
@@ -186,19 +221,18 @@
                         >
                         <div class="col-sm-10">
                           <div class="input-group">
-                            <div class="input-group-prepend">
-                              <span class="input-group-text"
-                                ><i class="far fa-calendar-alt"></i
-                              ></span>
+                            <div class="input-group-prepend"></div>
+                            <div
+                              class="input-group date"
+                              id="reservationdate"
+                              data-target-input="nearest"
+                            >
+                              <input
+                                type="date"
+                                class="form-control datetimepicker-input"
+                                v-model="formData.birthday"
+                              />
                             </div>
-                            <input
-                              ref = "dateInput"
-                              type="text"
-                              class="form-control"
-                              data-inputmask-alias="datetime"
-                              data-inputmask-inputformat="dd-mm-yyyy"
-                              v-model="formData.birthday"
-                            />
                           </div>
                         </div>
                       </div>
@@ -322,6 +356,59 @@
                 <!-- /.tab-content -->
               </div>
               <!-- /.card-body -->
+              <div class="card-footer clearfix">
+                <ul class="pagination pagination-sm m-0 float-right">
+                  <li class="page-item">
+                    <router-link
+                      :to="{
+                        name: 'edit-user',
+                        query: {
+                          page: currentPage < 1 ? currentPage - 1 : 1,
+                          keyword: searchKeyword,
+                        },
+                      }"
+                      class="page-link"
+                      :class="{ active: currentPage === 1 }"
+                      >&laquo;</router-link
+                    >
+                  </li>
+                  <li
+                    v-for="pageNumber in displayedPages"
+                    :key="pageNumber"
+                    class="page-item"
+                  >
+                    <router-link
+                      :to="{
+                        name: 'edit-user',
+                        query: {
+                          page: pageNumber,
+                          keyword: searchKeyword,
+                        },
+                      }"
+                      class="page-link"
+                      :class="{ active: currentPage === pageNumber }"
+                      >{{ pageNumber }}</router-link
+                    >
+                  </li>
+                  <li class="page-item">
+                    <router-link
+                      :to="{
+                        name: 'edit-user',
+                        query: {
+                          page:
+                            currentPage < totalPages
+                              ? currentPage + 1
+                              : totalPages,
+                          keyword: searchKeyword,
+                        },
+                      }"
+                      class="page-link"
+                      :class="{ active: currentPage === totalPages }"
+                      >&raquo;</router-link
+                    >
+                  </li>
+                </ul>
+              </div>
             </div>
             <!-- /.card -->
           </div>
@@ -339,16 +426,24 @@
 <script>
 import axios from "axios";
 import MethodComponent from "@/components/methods/MethodComponent.vue";
-import $ from "jquery"; // Import jQuery
-
 export default {
   computed: {
     getSwalTopRight() {
       return MethodComponent.methods.swalTopRight();
     },
+    displayedPages() {
+      return MethodComponent.methods.calculateDisplayedPages(
+        this.currentPage,
+        this.totalPages
+      );
+    },
   },
   data() {
     return {
+      changeLogs: [],
+      totalPages: 0,
+      currentPage: 1,
+      searchKeyword: "",
       roleUserLoggedIn: localStorage.getItem("role"),
       idUser: null,
       userData: {
@@ -387,14 +482,22 @@ export default {
   },
   mounted() {
     this.idUser = this.$route.params.id ? this.$route.params.id : null;
-    this.fetchUserData();
-
-    $(this.$refs.dateInput).inputmask("dd-mm-yyyy", {
-      placeholder: this.formData.birthday,
-    });
+    const page = parseInt(this.$route.query.page) || 1;
+    this.fetchUserData(page);
+    this.currentPage = page;
+  },
+  watch: {
+    "$route.query.page"(newPage) {
+      this.fetchUserData(parseInt(newPage) || 1);
+      this.currentPage = parseInt(newPage) || 1;
+    },
+    "$route.query.keyword"(newKeyword) {
+      this.searchKeyword = newKeyword || "";
+      this.fetchUserData(this.currentPage);
+    },
   },
   methods: {
-    fetchUserData() {
+    fetchUserData(page) {
       if (!this.idUser) {
         console.error("ID is not defined");
         return;
@@ -410,25 +513,32 @@ export default {
         .catch((error) => {
           console.error("Error fetching user data:", error);
         });
+
+      axios
+        .get(`http://localhost:8083/api/change-log/${this.idUser}?page=${page}`)
+        .then((responseLog) => {
+          this.changeLogs = responseLog.data.listResult; // Lưu dữ liệu trả về vào biến changeLogs
+          this.totalPages = responseLog.data.totalPage;
+          this.currentPage = responseLog.data.page;
+        })
+        .catch((error) => {
+          console.error("Error fetching logs data:", error);
+        });
     },
     async changeInfor() {
       try {
-        await axios.put(
-          `http://localhost:8083/api/admins/${this.idUser}`,
-          {
-            code: this.formData.code,
-            name: this.formData.name,
-            birthday: this.formattedDateEN(this.formData.birthday),
-            username: this.formData.username,
-            password: this.formData.password,
-            gender: this.formData.gender,
-            phone: this.formData.phone,
-            email: this.formData.email,
-            address: this.formData.address,
-            role: this.formData.role,
-            status: this.formData.status,
-          }
-        );
+        await axios.put(`http://localhost:8083/api/admins/${this.idUser}`, {
+          code: this.formData.code,
+          name: this.formData.name,
+          birthday: "2000-11-03",
+          username: this.formData.username,
+          gender: this.formData.gender,
+          phone: this.formData.phone,
+          email: this.formData.email,
+          address: this.formData.address,
+          role: this.userData.role,
+          status: this.userData.status,
+        });
         this.toastAlert("success", "Cập nhật thành công !!!");
         this.fetchUserData();
         console.log(this.formData.birthday);
@@ -498,7 +608,9 @@ export default {
         status: this.userData.status,
       });
     },
-
+    formattedDateLog(dateString) {
+      return MethodComponent.methods.formatDateTime(dateString);
+    },
     toastAlert(icon, title) {
       MethodComponent.methods.showToastAlert(this.getSwalTopRight, icon, title);
     },

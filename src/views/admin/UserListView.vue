@@ -199,7 +199,7 @@ export default {
         });
     },
     formattedDate(birthday) {
-      return MethodComponent.methods.formatBirthday(birthday);
+      return MethodComponent.methods.formatBirthday_VN(birthday);
     },
   },
   mounted() {

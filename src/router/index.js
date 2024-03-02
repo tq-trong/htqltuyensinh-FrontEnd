@@ -54,6 +54,8 @@ const routes = [
     component: EditUserView,
     props: route => ({
       id: parseInt(route.params.id) || null, // Truyền tham số page từ URL vào props
+      page: parseInt(route.query.page) || 1, // Truyền tham số page từ URL vào props
+      keyword: route.query.keyword || '' // Truyền tham số keyword từ query string vào props, mặc định là null nếu không có keyword
     }),
     meta: {
       layout: AdminLayout
@@ -72,6 +74,10 @@ const routes = [
     path: '/admin/data-list',
     name: 'data-list',
     component: DataListView,
+    props: route => ({
+      page: parseInt(route.query.page) || 1, // Truyền tham số page từ URL vào props
+      keyword: route.query.keyword || '' // Truyền tham số keyword từ query string vào props, mặc định là null nếu không có keyword
+    }),
     meta: {
       layout: AdminLayout
     }
@@ -112,6 +118,10 @@ const routes = [
     path: '/admin/change-log-list',
     name: 'change-log-list',
     component: ChangeLogListView,
+    props: route => ({
+      page: parseInt(route.query.page) || 1, // Truyền tham số page từ URL vào props
+      keyword: route.query.keyword || '' // Truyền tham số keyword từ query string vào props, mặc định là null nếu không có keyword
+    }),
     meta: {
       layout: AdminLayout
     }
