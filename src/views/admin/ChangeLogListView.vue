@@ -73,7 +73,7 @@
                           >
                             <td>{{ index + 1 }}</td>
                             <td>{{ formattedDate(changeLog.time) }}</td>
-                            <td>{{ changeLog.admin }}</td>
+                            <td>{{ changeLog.admin.name }}</td>
                             <td>{{ changeLog.description }}</td>
                           </tr>
                         </tbody>

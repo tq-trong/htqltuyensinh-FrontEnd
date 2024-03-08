@@ -110,6 +110,10 @@ const routes = [
     path: '/admin/login-time',
     name: 'login-time',
     component: LoginTimeView,
+    props: route => ({
+      page: parseInt(route.query.page) || 1, // Truyền tham số page từ URL vào props
+      keyword: route.query.keyword || '' // Truyền tham số keyword từ query string vào props, mặc định là null nếu không có keyword
+    }),
     meta: {
       layout: AdminLayout
     }

@@ -95,24 +95,32 @@
                       class="nav-link active"
                       href="#activity"
                       data-toggle="tab"
+                      @click="showPagination('activity')"
                       >Hoạt động</a
                     >
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="#detail" data-toggle="tab"
+                    <a
+                      class="nav-link"
+                      href="#detail"
+                      data-toggle="tab"
+                      @click="showPagination('detail')"
                       >Chỉnh sửa</a
                     >
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="#changePass" data-toggle="tab"
+                    <a
+                      class="nav-link"
+                      href="#changePass"
+                      data-toggle="tab"
+                      @click="showPagination('changePass')"
                       >Đổi mật khẩu</a
                     >
                   </li>
                 </ul>
-                
               </div>
               <!-- /.card-header -->
-              
+
               <div class="card-body">
                 <div class="tab-content">
                   <div class="active tab-pane" id="activity">
@@ -357,7 +365,7 @@
               </div>
               <!-- /.card-body -->
               <div class="card-footer clearfix">
-                <ul class="pagination pagination-sm m-0 float-right">
+                <ul class="pagination pagination-sm m-0 float-right" v-if="isActive">
                   <li class="page-item">
                     <router-link
                       :to="{
@@ -440,6 +448,7 @@ export default {
   },
   data() {
     return {
+      isActive: true,
       changeLogs: [],
       totalPages: 0,
       currentPage: 1,
@@ -525,6 +534,12 @@ export default {
           console.error("Error fetching logs data:", error);
         });
     },
+
+    showPagination(id) {
+      if (id == "activity") this.isActive = true;
+      else this.isActive = false;
+    },
+
     async changeInfor() {
       try {
         await axios.put(`http://localhost:8083/api/admins/${this.idUser}`, {

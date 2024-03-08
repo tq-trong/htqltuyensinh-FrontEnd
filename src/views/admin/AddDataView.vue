@@ -23,7 +23,7 @@
           <div class="col-12">
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Title</h3>
+                <h3 class="card-title"></h3>
                 <div class="card-tools">
                   <button
                     type="button"
@@ -44,10 +44,28 @@
                 </div>
               </div>
               <div class="card-body">
-                Start creating your amazing application!
+                <div class="form-group">
+                  <label for="exampleInputFile">Nhập file dữ liệu:</label>
+                  <div class="input-group">
+                    <div class="custom-file">
+                      <input
+                        type="file"
+                        class="custom-file-input"
+                        id="exampleInputFile"
+                        accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                        @change="handleFileUpload"
+                      />
+                      <label class="custom-file-label" for="exampleInputFile"
+                        >Chọn file</label
+                      >
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div class="card-footer">Footer</div>
+              <div class="card-footer">
+                <button type="submit" class="btn btn-primary">Import</button>
+              </div>
             </div>
           </div>
         </div>
@@ -55,4 +73,27 @@
     </section>
   </div>
 </template>
+
+<script>
+export default {
+  methods: {
+    handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        if (
+          file.type ===
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+          file.type === "application/vnd.ms-excel"
+        ) {
+          // Xử lý file Excel ở đây
+          console.log("Đã chọn file Excel:", file);
+        } else {
+          // Hiển thị thông báo lỗi khi chọn file không hợp lệ
+          console.error("Vui lòng chọn file Excel.");
+        }
+      }
+    },
+  },
+};
+</script>
 

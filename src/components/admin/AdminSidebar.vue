@@ -56,9 +56,14 @@
         >
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
-         <li class="nav-item" >
+          <li class="nav-item">
             <!-- menu-is-opening menu-open -->
-            <a href="#" class="nav-link" :class="{ active: menuOpened === 'user' }" @click="toggleMenu('user')">
+            <a
+              href="#"
+              class="nav-link"
+              :class="{ active: menuOpened === 'user' }"
+              @click="toggleMenu('user')"
+            >
               <i class="nav-icon fas fa-light fa-users"></i>
               <p>
                 Quản lý người dùng
@@ -82,7 +87,12 @@
             </ul>
           </li>
           <li class="nav-item">
-            <a href="#" class="nav-link" :class="{ active: menuOpened === 'data' }" @click="toggleMenu('data')">
+            <a
+              href="#"
+              class="nav-link"
+              :class="{ active: menuOpened === 'data' }"
+              @click="toggleMenu('data')"
+            >
               <i class="nav-icon fas fa-light fa-database"></i>
               <p>
                 Quản lý dữ liệu
@@ -191,13 +201,18 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
       userData: JSON.parse(localStorage.getItem("userData")) || {},
-      menuOpened: null,// Biến để theo dõi trạng thái mở/closed của menu
+      loginTimeCreated: JSON.parse(localStorage.getItem("loginTimeCreated")) || {},
+      start: localStorage.getItem("start") || {},
+      menuOpened: null, // Biến để theo dõi trạng thái mở/closed của menu
     };
   },
+
   computed: {
     // Tạo computed property để chuyển đổi userData.name thành chữ in hoa
     upperCaseName() {
@@ -206,21 +221,30 @@ export default {
   },
   methods: {
     logout() {
+      axios.post(`http://localhost:8083/api/login-time`, {
+        admin: this.userData,
+        start: new Date(this.start),
+      });
+      // console.log(this.loginTimeCreated.id);
+      // console.log(this.loginTimeCreated);
+      console.log(this.start);
       // Xóa trạng thái đăng nhập khỏi localStorage khi đăng xuất
+      localStorage.removeItem("loginTimeCreated");
       localStorage.removeItem("isLoggedIn");
       localStorage.removeItem("role");
       localStorage.removeItem("userData");
       this.isLoggedIn = false;
       // Điều hướng người dùng đến trang đăng nhập sau khi đăng xuất
+
       this.$router.push("/login");
     },
-toggleMenu(menuType) {
+    toggleMenu(menuType) {
       if (this.menuOpened === menuType) {
         this.menuOpened = null;
       } else {
         this.menuOpened = menuType;
       }
-    }
+    },
   },
 };
 </script>

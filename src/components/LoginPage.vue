@@ -84,10 +84,18 @@ export default {
     const password = ref("");
     const isLoggedIn = ref(false);
 
-    const swalTopRight= MethodComponent.methods.swalTopRight();
+   const currentTimeString = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const currentTime = ref(new Date(currentTimeString));
+
+    // Thực hiện việc thêm múi giờ +7
+    currentTime.value.setHours(currentTime.value.getHours() + 7);
+
+
+    const swalTopRight = MethodComponent.methods.swalTopRight();
     const router = useRouter();
 
     const login = () => {
+      
       axios
         .post("http://localhost:8083/login", {
           username: username.value,
@@ -95,15 +103,27 @@ export default {
         })
         .then((response) => {
           const userData = response.data;
+
           localStorage.setItem("userData", JSON.stringify(userData));
 
           const authorities = response.data.authorities.map(
             (auth) => auth.authority
           );
+
+          // axios.post(`http://localhost:8083/api/login-time`, {
+          //     admin: userData,
+          //   }).then((response) => {
+          //     const loginTimeCreated = response.data;
+          //     console.log(loginTimeCreated);
+          //     localStorage.setItem("loginTimeCreated", JSON.stringify(loginTimeCreated));
+          //   });
+console.log(currentTime.value);
+localStorage.setItem("start", currentTime.value);
           if (authorities.includes("ADMIN")) {
             localStorage.setItem("isLoggedIn", true);
             localStorage.setItem("role", "ADMIN");
             isLoggedIn.value = true;
+            
             router.push("/admin"); // Điều hướng đến trang admin
           } else if (authorities.includes("USERMANAGER")) {
             localStorage.setItem("isLoggedIn", true);
@@ -119,6 +139,7 @@ export default {
         });
     };
 
+
     const toastAlert = (icon, title) => {
       MethodComponent.methods.showToastAlert(swalTopRight, icon, title);
     };
@@ -129,6 +150,7 @@ export default {
       isLoggedIn,
       login,
       toastAlert,
+      currentTime,
     };
   },
 };
