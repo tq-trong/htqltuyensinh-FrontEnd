@@ -118,6 +118,7 @@ const routes = [
       layout: AdminLayout
     }
   },
+  
   {
     path: '/admin/change-log-list',
     name: 'change-log-list',

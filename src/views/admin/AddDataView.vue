@@ -55,16 +55,22 @@
                         accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
                         @change="handleFileUpload"
                       />
-                      <label class="custom-file-label" for="exampleInputFile"
-                        >Chọn file</label
-                      >
+                      <label class="custom-file-label" for="exampleInputFile">{{
+                        selectedFileName
+                      }}</label>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div class="card-footer">
-                <button type="submit" class="btn btn-primary">Import</button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  @click="uploadFile"
+                >
+                  Lưu
+                </button>
               </div>
             </div>
           </div>
@@ -75,23 +81,58 @@
 </template>
 
 <script>
+import axios from "axios";
+import MethodComponent from "@/components/methods/MethodComponent.vue";
+
 export default {
+  computed: {
+    getSwalTopRight() {
+      return MethodComponent.methods.swalTopRight();
+    }, 
+  },
+  data() {
+    return {
+      selectedFileName: "Chọn file",
+      file: "",
+    };
+  },
   methods: {
     handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
+      this.file = event.target.files[0];
+      if (this.file) {
         if (
-          file.type ===
+          this.file.type ===
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-          file.type === "application/vnd.ms-excel"
+          this.file.type === "application/vnd.ms-excel"
         ) {
-          // Xử lý file Excel ở đây
-          console.log("Đã chọn file Excel:", file);
+          const fileNameLabel = document.querySelector(".custom-file-label");
+          fileNameLabel.textContent = this.file.name;
+          this.selectedFileName = this.file.name;
         } else {
           // Hiển thị thông báo lỗi khi chọn file không hợp lệ
-          console.error("Vui lòng chọn file Excel.");
+          this.toastAlert("error", "Vui lòng chọn file excel");
         }
       }
+    },
+    uploadFile() {
+      const formData = new FormData();
+      formData.append("file", this.file);
+
+      axios
+        .post("http://localhost:8083/api/users", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then(() => {
+          this.toastAlert("success", "Thêm dữ liệu thành công !!!");
+        })
+        .catch(() => {
+          this.toastAlert("error", "Vui lòng kiểm tra lại file đã upload !!!");
+        });
+    },
+    toastAlert(icon, title) {
+      MethodComponent.methods.showToastAlert(this.getSwalTopRight, icon, title);
     },
   },
 };
