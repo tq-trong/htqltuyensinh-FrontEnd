@@ -84,7 +84,7 @@
                                 <div class="col">
                                   <router-link
                                     :to="{
-                                      name: 'edit-user',
+                                      name: 'data-detail',
                                       params: { id: user.id },
                                     }"
                                     class="btn btn-warning btn-sm"
@@ -161,7 +161,7 @@
 
 <script>
 import MethodComponent from "@/components/methods/MethodComponent.vue";
-const API_NAME = "data";
+const API_NAME = "users";
 export default {
   data() {
     return {

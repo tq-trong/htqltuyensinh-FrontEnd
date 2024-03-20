@@ -11,6 +11,8 @@ import AssignDataView from '../views/admin/AssignDataView.vue'
 import LoginTimeView from '../views/admin/LoginTimeView.vue'
 import ChangeLogListView from '../views/admin/ChangeLogListView.vue'
 import FileListView from '../views/admin/FileListView.vue'
+import DataDetailView from '../views/admin/DataDetailView.vue'
+import SearchView from '../views/user/SearchView.vue'
 
 import AdminLayout from '../layouts/AdminLayout.vue'
 import BlankLayout from '../layouts/BlankLayout.vue'
@@ -18,7 +20,16 @@ import BlankLayout from '../layouts/BlankLayout.vue'
 import LoginPage from '../components/LoginPage.vue';
 
 
+
 const routes = [
+  {
+    path: '/',
+    name: 'search',
+    component: SearchView,
+    meta: {
+      layout: BlankLayout
+    }
+  },
   {
     path: '/admin',
     name: 'home',
@@ -46,7 +57,7 @@ const routes = [
     meta: {
       layout: AdminLayout
     }
-    
+
   },
   {
     path: '/admin/edit-user/:id',
@@ -60,7 +71,7 @@ const routes = [
     meta: {
       layout: AdminLayout
     }
-    
+
   },
   {
     path: '/admin/add-user',
@@ -94,6 +105,10 @@ const routes = [
     path: '/admin/divide-data',
     name: 'divide-data',
     component: DivideDataView,
+    props: route => ({
+      page: parseInt(route.query.page) || 1, // Truyền tham số page từ URL vào props
+      keyword: route.query.keyword || '' // Truyền tham số keyword từ query string vào props, mặc định là null nếu không có keyword
+    }),
     meta: {
       layout: AdminLayout
     }
@@ -102,6 +117,10 @@ const routes = [
     path: '/admin/assign-data',
     name: 'assign-data',
     component: AssignDataView,
+    props: route => ({
+      page: parseInt(route.query.page) || 1, // Truyền tham số page từ URL vào props
+      keyword: route.query.keyword || '' // Truyền tham số keyword từ query string vào props, mặc định là null nếu không có keyword
+    }),
     meta: {
       layout: AdminLayout
     }
@@ -118,7 +137,7 @@ const routes = [
       layout: AdminLayout
     }
   },
-  
+
   {
     path: '/admin/change-log-list',
     name: 'change-log-list',
@@ -135,6 +154,17 @@ const routes = [
     path: '/admin/file-list',
     name: 'file-list',
     component: FileListView,
+    meta: {
+      layout: AdminLayout
+    }
+  },
+  {
+    path: '/admin/data-detail/:id',
+    name: 'data-detail',
+    component: DataDetailView,
+    props: route => ({
+      id: parseInt(route.params.id) || null, // Truyền tham số page từ URL vào props
+    }),
     meta: {
       layout: AdminLayout
     }

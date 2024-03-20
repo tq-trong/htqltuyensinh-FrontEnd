@@ -19,7 +19,7 @@
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="image">
           <img
-            src="@/assets/logo.png"
+            src="@/assets/user.jpg"
             class="img-circle elevation-2"
             alt="User Image"
           />
