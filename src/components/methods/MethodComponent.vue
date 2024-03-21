@@ -14,6 +14,10 @@ export default {
       }
       return axios.get(url);
     },
+    fetchDataWithoutPage(objectData) {
+      let url = `${API_URL}/${objectData}`;
+      return axios.get(url);
+    },
     fetchProvinces() {
       // Hàm lấy dữ liệu tỉnh về
       let url = `https://vapi.vnappmob.com/api/province`;
