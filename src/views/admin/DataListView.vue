@@ -8,7 +8,9 @@
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <router-link to="/admin" class="breadcrumb-item">Trang chủ</router-link>
+              <router-link to="/admin" class="breadcrumb-item"
+                >Trang chủ</router-link
+              >
               <li class="breadcrumb-item active">Danh sách dữ liệu</li>
             </ol>
           </div>
@@ -22,6 +24,9 @@
           <div class="col-12">
             <div class="card">
               <div class="card-header">
+                <button @click="clickReturnDataListView()" class="btn btn-success btn-sm float-left">
+                  Danh sách đầy đủ
+                </button>
                 <div class="card-tools">
                   <div class="input-group input-group-sm" style="width: 150px">
                     <input
@@ -116,7 +121,10 @@
                     <router-link
                       :to="{
                         name: 'data-list',
-                        query: { page: currentPage < 1 ? currentPage - 1 : 1, keyword: searchKeyword },
+                        query: {
+                          page: currentPage < 1 ? currentPage - 1 : 1,
+                          keyword: searchKeyword,
+                        },
                       }"
                       class="page-link"
                       :class="{ active: currentPage === 1 }"
@@ -142,7 +150,13 @@
                     <router-link
                       :to="{
                         name: 'data-list',
-                        query: { page: currentPage < totalPages ? currentPage + 1 : totalPages, keyword: searchKeyword },
+                        query: {
+                          page:
+                            currentPage < totalPages
+                              ? currentPage + 1
+                              : totalPages,
+                          keyword: searchKeyword,
+                        },
                       }"
                       class="page-link"
                       :class="{ active: currentPage === totalPages }"
@@ -161,6 +175,7 @@
 
 <script>
 import MethodComponent from "@/components/methods/MethodComponent.vue";
+import axios from "axios";
 const API_NAME = "users";
 export default {
   data() {
@@ -170,40 +185,71 @@ export default {
       totalPages: 0,
       currentPage: 1,
       searchKeyword: "",
+      isAssignData: localStorage.getItem("isAssignData") || false,
+      isAssign: localStorage.getItem("idAssign") || 0,
     };
   },
   computed: {
     displayedPages() {
-      return MethodComponent.methods.calculateDisplayedPages(this.currentPage, this.totalPages);
+      return MethodComponent.methods.calculateDisplayedPages(
+        this.currentPage,
+        this.totalPages
+      );
     },
   },
   methods: {
     fetchData(page) {
-      MethodComponent.methods.fetchData(page, this.searchKeyword, API_NAME)
-        .then(response => {
-          this.data = response.data.listResult;
-          this.totalPages = response.data.totalPage;
-          this.currentPage = response.data.page;
-        })
-        .catch(error => {
-          console.error("Error fetching admins:", error);
-        });
+      if (!this.isAssignData) {
+        MethodComponent.methods
+          .fetchData(page, this.searchKeyword, API_NAME)
+          .then((response) => {
+            this.data = response.data.listResult;
+            this.totalPages = response.data.totalPage;
+            this.currentPage = response.data.page;
+          })
+          .catch((error) => {
+            console.error("Error fetching admins:", error);
+          });
+      } else {
+        let url = `http://localhost:8083/api/user?page=${page}`;
+        if (this.searchKeyword) {
+          url += `&keyword=${encodeURIComponent(this.searchKeyword)}`;
+        }
+        axios
+          .post(url, { id: this.isAssign,})
+          .then((response) => {
+            this.data = response.data.listResult;
+            this.totalPages = response.data.totalPage;
+            this.currentPage = response.data.page;
+          })
+          .catch((error) => {
+            console.error("Error fetching admins:", error);
+          });
+      }
     },
     fetchProvinces() {
-      MethodComponent.methods.fetchProvinces()
-        .then(response => {
+      MethodComponent.methods
+        .fetchProvinces()
+        .then((response) => {
           this.provinces = response.data.results;
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("Error fetching provinces:", error);
         });
     },
     getProvinceName(provinceId) {
-      const province = this.provinces.find(province => province.province_id === provinceId);
-       return province ? province.province_name : 'Unknown';
+      const province = this.provinces.find(
+        (province) => province.province_id === provinceId
+      );
+      return province ? province.province_name : "Unknown";
     },
     formattedDate(birthday) {
       return MethodComponent.methods.formatBirthday_VN(birthday);
+    },
+    clickReturnDataListView() {
+      localStorage.removeItem("idAssign");
+      localStorage.removeItem("isAssignData");
+      if (this.isAssignData) location.reload();
     },
   },
   mounted() {

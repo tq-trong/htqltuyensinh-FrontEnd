@@ -128,7 +128,7 @@
                     <div class="input-group-append">
                       <router-link
                         :to="{
-                          name: 'user-list',
+                          name: 'divide-data',
                           query: {
                             page: 1,
                             keyword: searchKeyword,
@@ -167,15 +167,15 @@
                                 (this.currentPage - 1) * this.LIMIT_ITEMS
                               }}
                             </td>
-                            <td>{{ assgin.code }}</td>
-                            <td>{{ assgin.code }}</td>
-                            <td>{{ assgin.quantity }}</td>
+                            <td>{{ assgin.assignId.code }}</td>
+                            <td>{{ assgin.userId.school }}</td>
+                            <td>{{ assgin.assignId.quantity }}</td>
                             <td>
                               <div class="row">
                                 <div class="col">
                                   <router-link
                                     :to="{
-                                      name: 'edit-user',
+                                      name: 'divide-data',
                                       params: { id: assgin.id },
                                     }"
                                     class="btn btn-warning btn-sm"
@@ -308,6 +308,7 @@ export default {
           this.data = response.data.listResult;
           this.totalPages = response.data.totalPage;
           this.currentPage = response.data.page;
+          console.log(response.data.totalPage);
         })
         .catch((error) => {
           console.error("Error fetching admins:", error);
